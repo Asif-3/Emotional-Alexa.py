@@ -1,15 +1,18 @@
-
 import speech_recognition as sr
 import pyttsx3
 
-Initialize speech recognition and text-to-speech engines
+# Initialize speech recognition and text-to-speech engines
 r = sr.Recognizer()
 engine = pyttsx3.init()
 
-Define voice commands and responses
+# Set the voice to a female voice (example ID; may vary)
+# Replace '1' with the appropriate index for a female voice on your system
+engine.setProperty('voice', engine.getProperty('voices')[1].id)  # Assuming index 1 is female
+
+# Define voice commands and responses
 commands = {
     "hello": "Hello! How are you?",
-    "what's your name": "My name is Assistant",
+    "what's your name": "My name is sam",
     "exit": "Goodbye!",
 }
 
