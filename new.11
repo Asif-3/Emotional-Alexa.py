@@ -1,0 +1,111 @@
+import speech_recognition as sr
+import pyttsx3
+import random
+import time
+from datetime import datetime
+
+r = sr.Recognizer()
+engine = pyttsx3.init()
+
+voices = engine.getProperty('voices')
+
+engine.setProperty('voice', voices[1].id)
+
+engine.setProperty('rate', 150)
+engine.setProperty('volume', 1)
+
+commands = {
+    "hello": "Hello! How are you today?",
+    "what's your name": "I am Emotional Alexa, your personal assistant.",
+    "how are you": "I'm doing great, thanks for asking!",
+    "exit": "Goodbye, take care!",
+    "what time is it": "Let me check the time for you...",
+    "tell me a joke": "Why don’t skeletons fight each other? They don’t have the guts!"
+}
+
+def get_time():
+    return datetime.now().strftime("%I:%M %p")
+
+def tell_joke():
+    jokes = [
+        "Why don’t skeletons fight each other? They don’t have the guts!",
+        "What do you get when you cross a snowman and a vampire? Frostbite.",
+        "Why did the math book look sad? Because it had too many problems."
+    ]
+    joke = random.choice(jokes)
+    print(f"Assistant: {joke}")
+    return joke
+
+def recognize_speech():
+    with sr.Microphone() as source:
+        print("Listening...")
+        engine.say("Listening...")
+        engine.runAndWait()
+
+        r.adjust_for_ambient_noise(source, duration=2)
+        audio = r.listen(source, timeout=20)
+        try:
+            command = r.recognize_google(audio).lower()
+            print(f"You said: {command}")
+            return command
+        except sr.UnknownValueError:
+            engine.say("Sorry, I didn't understand that. Can you repeat?")
+            engine.runAndWait()
+            return None
+        except sr.RequestError:
+            engine.say("There seems to be an issue with the speech recognition service.")
+            engine.runAndWait()
+            return None
+
+def recognize_emotion(command):
+    emotions = {
+        "angry": "I'm sorry if you're feeling upset. How can I help you feel better?",
+        "sad": "I'm here if you need to talk. Let's find a way to cheer you up!",
+        "happy": "I'm glad you're feeling good! Keep that positivity going!"
+    }
+    
+    for emotion in emotions:
+        if emotion in command:
+            return emotions[emotion], emotion
+    return None, None
+
+def respond(command):
+    emotion_response, emotion = recognize_emotion(command)
+
+    if emotion_response:
+        if emotion == "angry":
+            engine.setProperty('rate', 100)
+            engine.setProperty('volume', 0.9)
+        elif emotion == "sad":
+            engine.setProperty('rate', 130)
+            engine.setProperty('volume', 0.8)
+        elif emotion == "happy":
+            engine.setProperty('rate', 170)
+            engine.setProperty('volume', 1)
+
+        response = emotion_response
+    elif "what time is it" in command:
+        response = get_time()
+    elif "tell me a joke" in command:
+        response = tell_joke()
+    else:
+        response = commands.get(command, "Sorry, I didn’t quite catch that. Could you please repeat?")
+
+    print(f"Assistant: {response}")
+    engine.say(response)
+    engine.runAndWait()
+
+def main():
+    engine.say("Emotional Alexa is ready to listen. Say 'exit' to stop.")
+    engine.runAndWait()
+
+    while True:
+        command = recognize_speech()
+        if command == "exit":
+            respond(command)
+            break
+        if command:
+            respond(command)
+
+if __name__ == "__main__":
+    main()
